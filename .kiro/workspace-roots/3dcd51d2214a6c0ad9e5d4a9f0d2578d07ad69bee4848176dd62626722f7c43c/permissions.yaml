@@ -1,0 +1,19 @@
+version: "1"
+permissions:
+  # Block file system write operations outside the current workspace
+  fs_write:
+    deny:
+      - pattern: "/**"
+        except: "/Users/ankrbde/IdeaProjects/search-rentals-de/**"
+
+  # Block dangerous shell operations and commands accessing outside paths
+  shell:
+    deny:
+      - command: "sudo *"
+      - command: "rm -rf /*"
+      - command: "rm -rf ~*"
+      - command: "chmod *"
+      - command: "chown *"
+      # Prevent execution targeting paths outside the project root
+      - pattern: "* /"
+      - pattern: "* ~*"
