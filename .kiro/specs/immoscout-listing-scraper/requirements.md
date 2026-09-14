@@ -2,102 +2,135 @@
 
 ## Overview
 
-A Java/Spring Boot module that scrapes new apartment listings from ImmoScout24's public search results page and returns them as an in-memory list of `Listing` domain objects. No persistence or notification concerns are in scope for this spec.
+A Java/Spring Boot module that fetches apartment listings from ImmoScout24's public search results page, parses each listing into a structured domain object, and returns an in-memory list from a service method. No persistence, no notifications, no framework dependencies in the domain layer.
 
 ---
 
 ## Functional Requirements
 
-### REQ-1: Scrape Search Results Page
+### REQ-1: Fetch Search Results Page
 
-WHEN the scraper service is invoked with a search URL,  
-THE SYSTEM SHALL fetch the HTML content of the ImmoScout24 public search results page at that URL.
+WHEN the listing service is called with a search URL,
+THE SYSTEM SHALL fetch the HTML content of the ImmoScout24 search results page at that URL.
 
-**Acceptance Criteria:**
-- The system accepts a full ImmoScout24 search URL (e.g. `https://www.immoscout24.de/Wohnung-mieten/...`) as input.
-- The system performs an HTTP GET request to that URL using Jsoup.
-- If the HTTP response status is not 2xx, the system throws a `ScraperException` with the status code.
-- The system sets a realistic User-Agent header on every request to avoid bot-detection blocks.
+WHEN the HTTP response status is not 200 OK,
+THE SYSTEM SHALL throw a domain exception indicating the fetch failed, including the status code.
 
----
-
-### REQ-2: Parse Listings from HTML
-
-WHEN the HTML of a search results page has been fetched,  
-THE SYSTEM SHALL parse each apartment listing entry from the page into a `Listing` domain object.
-
-**Acceptance Criteria:**
-- Each parsed `Listing` contains: address, price (EUR), size in sqm, room count, and listing URL.
-- Fields that cannot be parsed from the HTML are represented as `null` (not blank string, not zero).
-- Numeric fields (price, size, room count) are parsed from the raw text by stripping non-numeric characters before conversion.
-- The listing URL is an absolute URL (prefixed with `https://www.immoscout24.de` if relative).
-- Listings where both price and size are `null` are silently skipped.
+WHEN the HTTP request times out or a network error occurs,
+THE SYSTEM SHALL throw a domain exception wrapping the underlying cause.
 
 ---
 
-### REQ-3: Return All Listings as In-Memory List
+### REQ-2: Parse Listing Items from Search Results
 
-WHEN parsing is complete,  
-THE SYSTEM SHALL return all parsed `Listing` objects as a `List<Listing>` to the caller.
+WHEN the search results page HTML is successfully retrieved,
+THE SYSTEM SHALL identify all individual listing entries present on the page.
 
-**Acceptance Criteria:**
-- The return type is `java.util.List<Listing>`.
-- The list preserves the order in which listings appear on the page.
-- An empty list is returned (not null, not an exception) when the page contains zero parseable listings.
+WHEN the page HTML does not contain a recognizable search-results container element at all,
+THE SYSTEM SHALL treat this as a parse failure and throw a domain exception (e.g. ScraperParseException) — this signals a blocked/anti-bot response or a structural site change, not a genuine zero-result search.
 
----
-
-### REQ-4: Support Pagination
-
-WHEN the search results span multiple pages,  
-THE SYSTEM SHALL scrape all pages and return a combined list of listings.
-
-**Acceptance Criteria:**
-- The system detects a "next page" link in the search results HTML.
-- The system follows the next-page link and repeats the fetch-and-parse cycle.
-- A configurable `maxPages` parameter caps the number of pages scraped (default: 5).
-- If `maxPages` is reached before the last page, the system stops and returns results collected so far.
+WHEN a valid search-results container element is present but contains zero listing entries,
+THE SYSTEM SHALL return an empty list.
 
 ---
 
-### REQ-5: Domain Isolation
+### REQ-3: Extract Listing Fields
 
-THE SYSTEM SHALL ensure the `Listing` domain class and the `ScraperPort` interface have zero dependencies on any framework (Spring, Jsoup, etc.).
+WHEN a listing entry is parsed,
+THE SYSTEM SHALL extract the following fields:
 
-**Acceptance Criteria:**
-- `Listing` is a plain Java record or POJO in a `domain` package.
-- `ScraperPort` is a plain Java interface in the `domain` package.
-- Neither `Listing` nor `ScraperPort` import classes from `org.springframework.*`, `org.jsoup.*`, or any other third-party library.
+| Field        | Type            | Description                                   |
+|--------------|-----------------|-----------------------------------------------|
+| `address`    | `String`        | Street address or district name as shown      |
+| `priceEur`   | `BigDecimal`    | Monthly cold rent in EUR                      |
+| `sizeSqm`    | `BigDecimal`    | Living area in square metres                  |
+| `roomCount`  | `BigDecimal`    | Number of rooms (may be fractional, e.g. 2.5) |
+| `listingUrl` | `String`        | Absolute URL to the individual listing page   |
+
+WHEN `listingUrl` cannot be extracted from a listing entry (missing element or unparseable value),
+THE SYSTEM SHALL exclude that listing entry entirely from the result list — `listingUrl` is a required field.
+
+WHEN the extracted listing URL is relative (not absolute),
+THE SYSTEM SHALL resolve it to an absolute URL using ImmoScout24's base domain (https://www.immobilienscout24.de) before setting it on the Listing object.
+
+WHEN any field other than `listingUrl` cannot be parsed from the HTML (missing element or unparseable text),
+THE SYSTEM SHALL set that field to `null` on the resulting `Listing` object rather than discarding the listing entirely.
 
 ---
 
-### REQ-6: Configuration via Application Properties
+### REQ-4: German-Locale Numeric Parsing
 
-WHEN the application starts,  
-THE SYSTEM SHALL read scraper configuration from Spring application properties.
+WHEN parsing `priceEur`, `sizeSqm`, or `roomCount` from page text,
+THE SYSTEM SHALL apply German-locale number formatting rules: dot (`.`) as thousands separator and comma (`,`) as decimal separator.
 
-**Acceptance Criteria:**
-- The following properties are supported:  
-  - `immoscout.scraper.base-url` — base URL for search (required)  
-  - `immoscout.scraper.max-pages` — maximum pages to scrape (default: 5)  
-  - `immoscout.scraper.request-delay-ms` — delay between requests in milliseconds (default: 1000)
-- Missing required properties cause a `BeanCreationException` on startup with a descriptive message.
+WHEN a number string such as `"1.200"` is encountered,
+THE SYSTEM SHALL parse it as `1200`, not `1.2`.
+
+WHEN a number string such as `"2,5"` is encountered,
+THE SYSTEM SHALL parse it as `2.5`.
+
+THE SYSTEM SHALL NOT rely on default JVM locale or US-locale number parsing for these fields.
+
+---
+
+### REQ-5: Return In-Memory List
+
+WHEN all listing entries on the page have been processed,
+THE SYSTEM SHALL return a `List<Listing>` containing one `Listing` object per parsed entry, in the order they appear on the page.
+
+---
+
+### REQ-6: Support Configurable Search URL
+
+WHEN the service method is invoked,
+THE SYSTEM SHALL accept the target search URL as a parameter, allowing callers to specify city, filters, and pagination without hardcoding.
+
+---
+
+### REQ-7: Single-Page Scope
+
+WHEN the service method is invoked,
+THE SYSTEM SHALL scrape only the single page identified by the provided URL and SHALL NOT automatically follow pagination links.
 
 ---
 
 ## Non-Functional Requirements
 
-- **NFR-1 Politeness:** The scraper introduces a configurable delay between consecutive HTTP requests (default 1000 ms) to avoid overloading the target server.
-- **NFR-2 Resilience:** A single unparseable listing must not abort the entire scrape; the error is logged and the listing is skipped.
-- **NFR-3 Testability:** The Jsoup HTTP call is hidden behind `ScraperPort` so the service can be unit-tested with a mock or stub port.
-- **NFR-4 No persistence:** This module must not depend on any database, cache, or messaging infrastructure.
+### NFR-1: Hexagonal Architecture
+
+THE SYSTEM SHALL define scraping behaviour behind a `ScraperPort` interface in the domain layer.
+THE SYSTEM SHALL ensure the domain model (`Listing`) and application service (`ListingService`) have zero dependencies on Spring, Jsoup, or any other framework or library.
+THE SYSTEM SHALL implement `ScraperPort` in an infrastructure adapter (`JsoupScraperAdapter`) that may depend on Jsoup.
+
+### NFR-2: HTTP Politeness
+
+THE SYSTEM SHALL send a `User-Agent` header that mimics a common desktop browser to reduce the likelihood of being blocked.
+THE SYSTEM SHALL support a configurable request timeout (default: 10 seconds).
+
+### NFR-3: Resilience
+
+THE SYSTEM SHALL not propagate raw Jsoup or I/O exceptions out of the `ScraperPort` contract; all exceptions crossing the port boundary SHALL be wrapped in domain-defined exception types.
+
+### NFR-4: Testability
+
+THE SYSTEM SHALL be structured such that the application service and domain logic can be unit-tested by providing a mock or stub `ScraperPort` implementation without starting a Spring context.
+
+THE SYSTEM SHALL include unit tests for `JsoupScraperAdapter`'s HTML parsing logic that load a saved local HTML fixture file rather than making live network calls, ensuring tests are deterministic and parser regressions are distinguishable from actual site-structure changes.
 
 ---
 
 ## Out of Scope
 
-- Persisting listings to a database
-- Sending notifications (email, push, etc.)
-- Authenticated / login-required pages
-- Image or document downloading
-- Price history or change detection
+- Pagination / multi-page crawling
+- Persistence (database, file system)
+- Notifications (email, webhook, etc.)
+- Authentication or login flows
+- Proxy rotation or CAPTCHA handling
+- Scheduling / cron triggers
+
+---
+
+## Known Limitations
+
+- **Missed listings between polls:** Because only a single page is scraped per invocation, any new listings that appear beyond page one between two consecutive polls will not be captured. This is an inherent constraint of single-page scope (see REQ-7).
+- **Sponsored/promoted listing duplicates:** ImmoScout24 surfaces promoted listings at the top of search results in addition to their organic position. These duplicates are not detected or deduplicated at this stage; deduplication by listing URL is expected to be handled by a downstream consumer.
