@@ -2,7 +2,7 @@
 
 ## Implementation Tasks
 
-- [-] 1. Initialise Maven project structure
+- [ ] 1. Initialise Maven project structure
   - Create a Maven `pom.xml` with Spring Boot parent, `spring-boot-starter`, `spring-boot-starter-test`, and `jsoup` dependencies.
   - Create the base package `com.example.searchrentals.scraper` and the sub-packages: `domain/model`, `domain/port`, `domain/exception`, `application`, `infrastructure/jsoup`.
   - **Acceptance:** `mvn compile` succeeds with no errors.
