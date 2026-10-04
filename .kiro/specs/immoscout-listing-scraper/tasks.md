@@ -19,13 +19,13 @@
   - Zero framework imports in either class.
   - **Acceptance:** Both classes compile; `ScraperParseException` is a subtype of `ScraperException`.
 
-- [~] 4. Define the `ScraperPort` interface
+- [x] 4. Define the `ScraperPort` interface
   - Create `ScraperPort.java` in `domain/port` with a single method: `List<Listing> fetchListings(String searchUrl)`.
   - Add Javadoc declaring: returns empty list when container present but no items; throws `ScraperParseException` when container absent; throws `ScraperException` on HTTP/IO failures.
   - Zero framework imports.
   - **Acceptance:** Interface compiles; Javadoc is present and accurate.
 
-- [~] 5. Implement `ListingService`
+- [x] 5. Implement `ListingService`
   - Create `ListingService.java` annotated `@Service` with a `ScraperPort` constructor argument.
   - Implement `public List<Listing> getListings(String searchUrl)` delegating to `scraperPort.fetchListings(searchUrl)`.
   - No Jsoup or HTTP logic; only `@Service` and constructor injection from Spring.
