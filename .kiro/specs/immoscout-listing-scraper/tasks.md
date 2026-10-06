@@ -31,7 +31,7 @@
   - No Jsoup or HTTP logic; only `@Service` and constructor injection from Spring.
   - **Acceptance:** Service compiles; only Spring stereotype annotation present as framework dependency.
 
-- [~] 6. Implement `JsoupScraperConfig`
+- [x] 6. Implement `JsoupScraperConfig`
   - Create `JsoupScraperConfig.java` annotated `@Component` and `@ConfigurationProperties(prefix = "scraper")`.
   - Fields: `String userAgent` (default: desktop Chrome UA string), `int timeoutMs` (default: `10_000`).
   - Add `application.properties` (or `application.yml`) with `scraper.user-agent` and `scraper.timeout-ms` keys.
