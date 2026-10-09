@@ -55,7 +55,7 @@
   - Select listing items with `container.select(ITEM)`. If the resulting `Elements` is empty, return `Collections.emptyList()`.
   - **Acceptance:** When given a fixture HTML with no container selector, `ScraperParseException` is thrown. When container is present but empty, empty list is returned.
 
-- [~] 10. Implement `JsoupScraperAdapter` — field extraction and URL-exclusion
+- [x] 10. Implement `JsoupScraperAdapter` — field extraction and URL-exclusion
   - For each item `Element` from Task 9, extract fields using the selector constants and `NumericParser`.
   - **URL-exclusion logic (REQ-3):** resolve URL via `element.selectFirst(URL).absUrl("href")`. If the result is `null` or blank, log a `WARN` and `continue` — do not add a `Listing` for this entry.
   - For all other fields (`address`, `priceEur`, `sizeSqm`, `roomCount`), set `null` if the element is absent or unparseable.

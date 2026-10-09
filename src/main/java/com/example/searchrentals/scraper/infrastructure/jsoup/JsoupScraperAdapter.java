@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -58,9 +60,38 @@ public class JsoupScraperAdapter implements ScraperPort {
             return Collections.emptyList();
         }
 
-        // Field extraction will be implemented in Task 10.
-        // Placeholder: return empty list until extraction logic is added.
-        return Collections.emptyList();
+        List<Listing> results = new ArrayList<>();
+
+        for (Element item : items) {
+            // REQ-3: URL is mandatory — skip entries without a resolvable URL
+            Element urlEl = item.selectFirst(ImmoScoutSelectors.URL);
+            if (urlEl == null) {
+                log.warn("Listing entry skipped: URL anchor element not found");
+                continue;
+            }
+            String listingUrl = urlEl.absUrl("href");
+            if (listingUrl == null || listingUrl.isBlank()) {
+                log.warn("Listing entry skipped: URL anchor present but href resolves to blank");
+                continue;
+            }
+
+            // Optional fields — null when absent or unparseable
+            Element addrEl = item.selectFirst(ImmoScoutSelectors.ADDRESS);
+            String address = addrEl != null ? addrEl.text() : null;
+
+            Element priceEl = item.selectFirst(ImmoScoutSelectors.PRICE);
+            BigDecimal priceEur = priceEl != null ? NumericParser.parseGerman(priceEl.text()) : null;
+
+            Element sizeEl = item.selectFirst(ImmoScoutSelectors.SIZE);
+            BigDecimal sizeSqm = sizeEl != null ? NumericParser.parseGerman(sizeEl.text()) : null;
+
+            Element roomsEl = item.selectFirst(ImmoScoutSelectors.ROOMS);
+            BigDecimal roomCount = roomsEl != null ? NumericParser.parseGerman(roomsEl.text()) : null;
+
+            results.add(new Listing(address, priceEur, sizeSqm, roomCount, listingUrl));
+        }
+
+        return results;
     }
 
     /**
