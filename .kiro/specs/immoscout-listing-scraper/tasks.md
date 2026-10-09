@@ -37,7 +37,7 @@
   - Add `application.properties` (or `application.yml`) with `scraper.user-agent` and `scraper.timeout-ms` keys.
   - **Acceptance:** Spring context loads; config values are injectable.
 
-- [~] 7. Define CSS selector constants
+- [x] 7. Define CSS selector constants
   - Create a package-private constants class (or interface) `ImmoScoutSelectors` in `infrastructure/jsoup`.
   - Define string constants for: `CONTAINER` (`#resultListItems`), `ITEM` (`article[data-is24-qa="resultlist-entry"]`), `ADDRESS`, `PRICE`, `SIZE`, `ROOMS`, `URL`.
   - **Acceptance:** All selectors referenced in `JsoupScraperAdapter` via these constants — no inline selector strings.
