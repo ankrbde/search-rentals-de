@@ -47,7 +47,7 @@
   - Implement `static BigDecimal parseGerman(String text)` that: strips non-numeric characters except `.` and `,`; removes dot thousands separator; replaces comma decimal separator with `.`; returns `new BigDecimal(cleaned)`, or `null` on blank/unparseable input.
   - **Acceptance:** Unit tests pass for inputs `"1.250,00 €"` → `1250.00`, `"2,5 Zi."` → `2.5`, `"1.200"` → `1200`, blank/null → `null`.
 
-- [~] 9. Implement `JsoupScraperAdapter` — container detection and item selection
+- [x] 9. Implement `JsoupScraperAdapter` — container detection and item selection
   - Create `JsoupScraperAdapter.java` annotated `@Component`, implementing `ScraperPort`.
   - Inject `JsoupScraperConfig`; build `Jsoup.connect(url).userAgent(...).timeout(...).get()`.
   - Wrap `IOException` and non-200 HTTP status in `ScraperException`.
