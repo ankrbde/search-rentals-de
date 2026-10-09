@@ -42,7 +42,7 @@
   - Define string constants for: `CONTAINER` (`#resultListItems`), `ITEM` (`article[data-is24-qa="resultlist-entry"]`), `ADDRESS`, `PRICE`, `SIZE`, `ROOMS`, `URL`.
   - **Acceptance:** All selectors referenced in `JsoupScraperAdapter` via these constants — no inline selector strings.
 
-- [~] 8. Implement German-locale numeric parser utility
+- [x] 8. Implement German-locale numeric parser utility
   - Create a package-private `NumericParser` utility class in `infrastructure/jsoup`.
   - Implement `static BigDecimal parseGerman(String text)` that: strips non-numeric characters except `.` and `,`; removes dot thousands separator; replaces comma decimal separator with `.`; returns `new BigDecimal(cleaned)`, or `null` on blank/unparseable input.
   - **Acceptance:** Unit tests pass for inputs `"1.250,00 €"` → `1250.00`, `"2,5 Zi."` → `2.5`, `"1.200"` → `1200`, blank/null → `null`.
