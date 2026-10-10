@@ -46,7 +46,20 @@ public class JsoupScraperAdapter implements ScraperPort {
     @Override
     public List<Listing> fetchListings(String searchUrl) {
         Document document = fetchDocument(searchUrl);
+        return parseDocument(document, searchUrl);
+    }
 
+    /**
+     * Parses a pre-fetched {@link Document} and extracts all valid listings.
+     *
+     * <p>Package-private to allow direct testing without HTTP calls.
+     *
+     * @param document  the parsed HTML document (base URI must be set for {@code absUrl} to work)
+     * @param searchUrl the original search URL — used only for error messages
+     * @return list of listings; empty if the container is present but contains no items
+     * @throws ScraperParseException if the results container element is absent
+     */
+    List<Listing> parseDocument(Document document, String searchUrl) {
         // REQ-2: Detect results container; absence indicates a blocked/changed page
         Element container = document.selectFirst(ImmoScoutSelectors.CONTAINER);
         if (container == null) {

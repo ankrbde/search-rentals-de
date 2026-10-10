@@ -63,12 +63,12 @@
   - Return the collected list.
   - **Acceptance:** Listings with a valid URL are included; entries missing a URL are excluded; entries with other missing fields are included with `null` values.
 
-- [~] 11. Unit tests — `NumericParser`
+- [x] 11. Unit tests — `NumericParser`
   - Write `NumericParserTest` covering: standard German price string, fractional room count, integer-only value with thousands dot, blank input, null input.
   - Add one test case that sets a non-German default JVM locale before calling the parser, to explicitly verify REQ-4's "must not rely on default locale" requirement.
   - **Acceptance:** All cases pass; no Spring context required.
 
-- [~] 12. Unit tests — `JsoupScraperAdapter` HTML parsing
+- [x] 12. Unit tests — `JsoupScraperAdapter` HTML parsing
   - Create an HTML fixture file in `src/test/resources` containing a realistic but minimal ImmoScout24-style search results page with: a results container, two complete listing entries, one listing entry with no URL anchor, and a fourth listing entry with a missing address element (URL present) so the "address == null" assertion has something to test against.
   - Write `JsoupScraperAdapterTest` using `Jsoup.parse(fixtureHtml, "https://www.immobilienscout24.de")` to instantiate the adapter's parsing logic:
     - Full fixture → assert 3 listings returned (third entry excluded due to missing URL).
