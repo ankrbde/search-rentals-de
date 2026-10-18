@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="UTF-8"><title>ImmoScout24 Test Fixture</title></head>
+<body>
+  <div id="resultListItems">
+
+    <!-- Entry 1: complete listing — address, price, size, rooms, URL -->
+    <article data-is24-qa="resultlist-entry">
+      <button data-is24-qa="resultlist-address">Musterstraße 1, 10115 Berlin</button>
+      <dl>
+        <dd data-is24-qa="price">1.250,00 €</dd>
+        <dd data-is24-qa="living-space">75,50 m²</dd>
+        <dd data-is24-qa="rooms">3 Zi.</dd>
+      </dl>
+      <a data-is24-qa="resultlist-entry-link" href="/expose/123456789">Listing 1</a>
+    </article>
+
+    <!-- Entry 2: complete listing -->
+    <article data-is24-qa="resultlist-entry">
+      <button data-is24-qa="resultlist-address">Beispielweg 42, 20095 Hamburg</button>
+      <dl>
+        <dd data-is24-qa="price">980,00 €</dd>
+        <dd data-is24-qa="living-space">60,00 m²</dd>
+        <dd data-is24-qa="rooms">2 Zi.</dd>
+      </dl>
+      <a data-is24-qa="resultlist-entry-link" href="/expose/987654321">Listing 2</a>
+    </article>
+
+    <!-- Entry 3: no URL anchor — must be excluded from results -->
+    <article data-is24-qa="resultlist-entry">
+      <button data-is24-qa="resultlist-address">Keine URL Straße 5, 80331 München</button>
+      <dl>
+        <dd data-is24-qa="price">1.100,00 €</dd>
+        <dd data-is24-qa="living-space">55,00 m²</dd>
+        <dd data-is24-qa="rooms">2,5 Zi.</dd>
+      </dl>
+      <!-- intentionally no <a data-is24-qa="resultlist-entry-link"> -->
+    </article>
+
+    <!-- Entry 4: URL present but no address element — must be included with address == null -->
+    <article data-is24-qa="resultlist-entry">
+      <!-- intentionally no data-is24-qa="resultlist-address" element -->
+      <dl>
+        <dd data-is24-qa="price">800,00 €</dd>
+        <dd data-is24-qa="living-space">45,00 m²</dd>
+        <dd data-is24-qa="rooms">1 Zi.</dd>
+      </dl>
+      <a data-is24-qa="resultlist-entry-link" href="/expose/111222333">Listing 4</a>
+    </article>
+
+  </div>
+</body>
+</html>
