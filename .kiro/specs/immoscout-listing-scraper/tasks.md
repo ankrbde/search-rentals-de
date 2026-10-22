@@ -77,7 +77,7 @@
     - Fixture with one entry missing address element → assert listing included with `address == null`.
   - **Acceptance:** All cases pass; no live HTTP calls made.
 
-- [~] 13. Unit tests — `ListingService`
+- [x] 13. Unit tests — `ListingService`
   - Write `ListingServiceTest` using a Mockito mock of `ScraperPort`.
   - Test: mock returns a list of two `Listing` objects → `getListings()` returns the same list unchanged.
   - Test: mock throws `ScraperParseException` → exception propagates unchanged.
