@@ -1,0 +1,30 @@
+# Maven build output
+target/
+
+# IDE — IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# IDE — Eclipse/STS
+.classpath
+.project
+.settings/
+.factorypath
+.apt_generated/
+
+# IDE — VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Spring Boot
+HELP.md
