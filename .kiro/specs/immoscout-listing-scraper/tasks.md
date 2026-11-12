@@ -83,7 +83,7 @@
   - Test: mock throws `ScraperParseException` → exception propagates unchanged.
   - **Acceptance:** Tests pass without starting a Spring context.
 
-- [~] 14. Integration smoke test
+- [x] 14. Integration smoke test
   - Write `JsoupScraperAdapterIntegrationTest` annotated `@SpringBootTest` using WireMock (or a local `MockWebServer`) to serve a fixture HTML response.
   - Assert that `ListingService.getListings(stubUrl)` returns the expected list when the stub returns a valid page, and throws `ScraperParseException` when the stub returns an unrecognized HTML page.
   - **Acceptance:** Tests pass; no real network calls to ImmoScout24.
