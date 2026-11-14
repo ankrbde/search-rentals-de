@@ -28,3 +28,7 @@ logs/
 
 # Spring Boot
 HELP.md
+
+# Kiro internal tooling (spec files are tracked, tooling config is not)
+.kiro/workspace-roots/
+.kiro/**/*.meta.json
